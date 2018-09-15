@@ -54,7 +54,7 @@ peachy.__index = peachy
   -- @tparam Image imageData a LÖVE image  to animate.
   -- @tparam string initialTag the name of the animation tag to use initially.
   -- @return the new Peachy object.
-  function peachy.new(dataFile, imageData, initialTag)
+  function peachy.new(dataFile, imageData, initialTag, speed)
     assert(dataFile ~= nil, "No JSON data!")
   
     local self = setmetatable({}, peachy)
@@ -80,6 +80,8 @@ peachy.__index = peachy
   self.tag = nil
   self.tagName = nil
   self.direction = nil
+
+  self.speed = speed or 1
 
   if initialTag then
     self:setTag(initialTag)
@@ -114,6 +116,10 @@ function peachy:setTag(tag)
   self:nextFrame()
 end
 
+-- function peachy:getTag()
+--   return self.tagName
+-- end
+
 --- Jump to a particular frame index (1-based indexes) in the current animation.
 --
 -- Errors if the frame is outside the tag's frame range.
@@ -132,6 +138,10 @@ function peachy:setFrame(frame)
 
   self.frame = self.tag.frames[self.frameIndex]
   self.frameTimer = cron.after(self.frame.duration, self.nextFrame, self)
+end
+
+function peachy:getFrame(frame)
+  return self.frameIndex
 end
 
 --- Draw the animation's current frame in a specified location.
@@ -165,7 +175,15 @@ function peachy:update(dt)
   assert(self.frameTimer, "Frame timer hasn't been initialized!")
 
   -- Update timer in milliseconds since that's how Aseprite stores durations
-  self.frameTimer:update(dt * 1000)
+  self.frameTimer:update(dt * 1000 * self.speed)
+end
+
+function peachy:setSpeed(speed)
+  self.speed = speed
+end
+
+function peachy:getSpeed()
+  return self.speed
 end
 
 --- Move to the next frame.
